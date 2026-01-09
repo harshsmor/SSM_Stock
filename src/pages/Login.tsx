@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { Loader2, User } from 'lucide-react'; // Changed icon to User
 
 export default function Login() {
-    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -17,10 +17,8 @@ export default function Login() {
         setError(null);
 
         try {
-            let loginEmail = email;
-            if (email.trim().toLowerCase() === 'ssm') {
-                loginEmail = 'ssm.admin@gmail.com';
-            }
+            // Append internal domain for Supabase Auth compatibility
+            const loginEmail = `${username}@ssm.com`;
 
             const { error } = await supabase.auth.signInWithPassword({
                 email: loginEmail,
@@ -60,8 +58,8 @@ export default function Login() {
                         </label>
                         <input
                             type="text"
-                            value={email} // keeping variable name 'email' for internal state is fine, or refactor to 'username'
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
                             className="input-field"
                             placeholder="Enter Username"
                             required
