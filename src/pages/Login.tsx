@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Lock } from 'lucide-react';
+import { Loader2, User } from 'lucide-react'; // Changed icon to User
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -41,7 +41,7 @@ export default function Login() {
             <div className="card w-full max-w-md border-industrial-border/50 bg-industrial-surface/50 backdrop-blur-sm">
                 <div className="text-center mb-8">
                     <div className="bg-industrial-accent/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Lock className="w-8 h-8 text-industrial-accent" />
+                        <User className="w-8 h-8 text-industrial-accent" />
                     </div>
                     <h1 className="text-2xl font-bold text-white mb-2">SSM Stock</h1>
                     <p className="text-industrial-muted">Authorized Personnel Only</p>
@@ -56,14 +56,14 @@ export default function Login() {
 
                     <div>
                         <label className="block text-sm font-medium text-industrial-muted mb-2">
-                            Username / Email Address
+                            Username
                         </label>
                         <input
                             type="text"
-                            value={email}
+                            value={email} // keeping variable name 'email' for internal state is fine, or refactor to 'username'
                             onChange={(e) => setEmail(e.target.value)}
                             className="input-field"
-                            placeholder="Username or Email"
+                            placeholder="Enter Username"
                             required
                         />
                     </div>
