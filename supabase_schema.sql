@@ -55,3 +55,4 @@ where not exists (select 1 from material_types where name = 'MS Plate');
 insert into material_types (name, density) 
 select 'MS Circle', 7.85 
 where not exists (select 1 from material_types where name = 'MS Circle');
+

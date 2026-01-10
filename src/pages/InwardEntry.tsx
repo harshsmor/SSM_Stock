@@ -18,6 +18,7 @@ export default function InwardEntry() {
 
     // Dimensions
     const [od, setOd] = useState<string>('');
+    const [id, setId] = useState<string>('0'); // Inner Diameter
     const [length, setLength] = useState<string>('');
     const [width, setWidth] = useState<string>('');
     const [thickness, setThickness] = useState<string>('');
@@ -26,13 +27,15 @@ export default function InwardEntry() {
     const [singlePieceWeight, setSinglePieceWeight] = useState<number>(0);
     const [calculatedQty, setCalculatedQty] = useState<number>(0);
 
-    // Fetch Material Types on Load
+    // Fetch Material Types on Load (Auto-Seed MS if missing)
     useEffect(() => {
         async function fetchMaterials() {
             const { data } = await supabase.from('material_types').select('*');
+
             if (data) {
                 const map: Record<string, string> = {};
-                data.forEach((m: any) => map[m.name] = m.id);
+                data.forEach((m: { name: string; id: string }) => map[m.name] = m.id);
+
                 setMaterialMap(map);
                 // Default to first
                 if (data.length > 0) setMaterialType(data[0].name);
@@ -44,18 +47,22 @@ export default function InwardEntry() {
     // Calculation Effect
     useEffect(() => {
         let weightInKg = 0;
-        // 7.85 g/cm3 = 7850 kg/m3. 
-        // 1 mm3 = 1e-9 m3. 
-        // Weight (kg) = Vol (mm3) * 7850 * 1e-9 = Vol * 0.00000785.
-
-        // Easier: Vol (cm3) = Vol(mm3) / 1000. Weight(g) = Vol(cm3) * 7.85. Weight(kg) = Weight(g)/1000.
+        // Density 7.85 g/cm3 = 0.00000785 kg/mm3
         const DENSITY_FACTOR = 0.00000785;
 
         if (shape === 'Cylinder') {
-            const r = parseFloat(od) / 2;
-            const h = parseFloat(length);
-            if (r > 0 && h > 0) {
-                const volMm3 = Math.PI * r * r * h;
+            const outerR = parseFloat(od) / 2;
+            const innerR = parseFloat(id) ? parseFloat(id) / 2 : 0; // Default to 0 if empty/NaN
+            const h = parseFloat(thickness); // Thickness acts as length/height for rounds
+
+            // Volume = pi * (R^2 - r^2) * h
+            // Valid if OD > 0, Thickness > 0, and OD > ID (or ID is 0)
+            if (outerR > 0 && h > 0 && outerR > innerR) {
+                const volMm3 = Math.PI * (Math.pow(outerR, 2) - Math.pow(innerR, 2)) * h;
+                weightInKg = volMm3 * DENSITY_FACTOR;
+            } else if (outerR > 0 && h > 0 && innerR === 0) {
+                // Solid Round
+                const volMm3 = Math.PI * Math.pow(outerR, 2) * h;
                 weightInKg = volMm3 * DENSITY_FACTOR;
             }
         } else {
@@ -77,7 +84,7 @@ export default function InwardEntry() {
             setCalculatedQty(0);
         }
 
-    }, [shape, od, length, width, thickness, purchaseWeight]);
+    }, [shape, od, id, length, width, thickness, purchaseWeight]);
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
@@ -89,7 +96,7 @@ export default function InwardEntry() {
             if (!materialMap[materialType]) throw new Error('Invalid Material Type');
 
             const shapeData = shape === 'Cylinder'
-                ? { od: parseFloat(od), length: parseFloat(length) }
+                ? { od: parseFloat(od), id: parseFloat(id), thickness: parseFloat(thickness) }
                 : { length: parseFloat(length), width: parseFloat(width), thickness: parseFloat(thickness) };
 
             const { error } = await supabase.from('inventory_raw').insert({
@@ -104,8 +111,9 @@ export default function InwardEntry() {
             setSuccessMsg(`Successfully added ${calculatedQty} pieces of ${materialType}`);
             // Reset Optional
             setPurchaseWeight('');
-        } catch (err: any) {
-            setErrorMsg(err.message || 'Failed to add stock');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Failed to add stock';
+            setErrorMsg(message);
         } finally {
             setLoading(false);
         }
@@ -164,7 +172,7 @@ export default function InwardEntry() {
                                 onChange={(e) => setShape(e.target.value as Shape)}
                                 className="input-field"
                             >
-                                <option value="Cylinder">Cylinder (Round)</option>
+                                <option value="Cylinder">Round (Circle/Ring)</option>
                                 <option value="Cuboid">Cuboid (Flat/Plate)</option>
                             </select>
                         </div>
@@ -177,7 +185,7 @@ export default function InwardEntry() {
                             {shape === 'Cylinder' ? (
                                 <>
                                     <div>
-                                        <label className="block text-xs text-industrial-muted mb-1">OD (Diameter)</label>
+                                        <label className="block text-xs text-industrial-muted mb-1">OD (Outer Dia)</label>
                                         <input
                                             type="number" step="0.1"
                                             className="input-field"
@@ -186,11 +194,20 @@ export default function InwardEntry() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-xs text-industrial-muted mb-1">Length</label>
+                                        <label className="block text-xs text-industrial-muted mb-1">ID (Inner Dia)</label>
                                         <input
                                             type="number" step="0.1"
                                             className="input-field"
-                                            value={length} onChange={e => setLength(e.target.value)}
+                                            value={id} onChange={e => setId(e.target.value)}
+                                            placeholder="0 for solid"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs text-industrial-muted mb-1">Thickness</label>
+                                        <input
+                                            type="number" step="0.1"
+                                            className="input-field"
+                                            value={thickness} onChange={e => setThickness(e.target.value)}
                                             required
                                         />
                                     </div>
