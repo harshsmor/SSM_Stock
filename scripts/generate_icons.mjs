@@ -17,22 +17,18 @@ async function generateIcons() {
         console.log(`Reading master image ${masterImage}...`);
         const image = await Jimp.read(masterPath);
 
-        // Define targets
+        // Define targets (Reduced to 3 high-quality files)
         const targets = [
-            { name: 'android-chrome-512x512.png', size: 512 },
-            { name: 'android-chrome-192x192.png', size: 192 },
-            { name: 'apple-touch-icon.png', size: 180 }, // Standard apple touch
-            { name: 'logo.png', size: 512 }, // App logo
-            { name: 'favicon-32x32.png', size: 32 },
-            { name: 'favicon-16x16.png', size: 16 }
+            { name: 'logo.png', size: 512 },           // Main App Logo & PWA 512
+            { name: 'icon-192.png', size: 192 }        // PWA 192 & High-Res Favicon
         ];
 
         for (const target of targets) {
             console.log(`Generating ${target.name} (${target.size}x${target.size})...`);
 
-            // 1. Resize
+            // 1. Resize (Use Bezier/Bicubic for best quality)
             const resized = image.clone();
-            resized.resize({ w: target.size, h: target.size });
+            resized.resize({ w: target.size, h: target.size, mode: Jimp.RESIZE_BEZIER });
 
             // 2. Round Corners (35% radius)
             // Radius in pixels = size * 0.35
@@ -86,9 +82,7 @@ async function generateIcons() {
             await resized.write(path.join(publicDir, target.name));
         }
 
-        // Copy favicon-32x32 to favicon.ico
-        console.log('Updating favicon.ico...');
-        fs.copyFileSync(path.join(publicDir, 'favicon-32x32.png'), path.join(publicDir, 'favicon.ico'));
+
 
         console.log('All icons generated with 35% radius.');
 
