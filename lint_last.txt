@@ -1,0 +1,17 @@
+﻿
+> ssm-stock@0.0.0 lint
+> eslint .
+
+
+C:\Users\USER\.gemini\antigravity\scratch\SSM_Stock\src\context\AuthContext.tsx
+  13:14  error  Fast refresh only works when a file only exports components. Move your React context(s) to a separate file  react-refresh/only-export-components
+
+C:\Users\USER\.gemini\antigravity\scratch\SSM_Stock\src\pages\BillaGeneration.tsx
+  54:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\USER\.gemini\antigravity\scratch\SSM_Stock\src\pages\PlateCutting.tsx
+  48:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 4 problems (4 errors, 0 warnings)
+

@@ -51,6 +51,7 @@ export default function BillaGeneration() {
             // Filter for items that look like circles (have OD) or material name contains "Circle"
             const circles = rawData
                 .filter((i: RawItem) => i.shape_data?.od || i.material_types?.name?.includes('Circle') || i.shape_data?.type === 'Circle')
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .map((d: any) => ({ ...d, material_name: d.material_types?.name }));
             setRawCircles(circles);
         }

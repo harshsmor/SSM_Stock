@@ -45,6 +45,7 @@ export default function PlateCutting() {
             .gt('quantity_pieces', 0);
 
         if (data) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const mapped = data.map((d: any) => ({ // Keeping d as any for supabase result simpler, or cast to partial InventoryItem
                 ...d,
                 material_name: d.material_types?.name,
@@ -53,7 +54,7 @@ export default function PlateCutting() {
             // Filter only plates (Cuboids) for cutting? Or allow others?
             // Usually plates are cut. 
             // Let's filter for items that have length/width/thickness
-            const plates = mapped.filter((i: any) => i.shape_data && i.shape_data.thickness);
+            const plates = mapped.filter(i => i.shape_data && i.shape_data.thickness);
             setItems(plates);
         }
     }
