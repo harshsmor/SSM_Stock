@@ -45,11 +45,11 @@ export default function PlateCutting() {
             .gt('quantity_pieces', 0);
 
         if (data) {
-            const mapped = data.map((d: any) => ({
+            const mapped = data.map((d: any) => ({ // Keeping d as any for supabase result simpler, or cast to partial InventoryItem
                 ...d,
                 material_name: d.material_types?.name,
                 material_density: d.material_types?.density || 7.85
-            }));
+            })) as InventoryItem[];
             // Filter only plates (Cuboids) for cutting? Or allow others?
             // Usually plates are cut. 
             // Let's filter for items that have length/width/thickness
@@ -92,7 +92,7 @@ export default function PlateCutting() {
                 setMaxPossibility(rows * cols);
             }
         }
-    }, [selectedItemId, cutOd]);
+    }, [selectedItemId, cutOd, selectedItem]);
 
     // Leftover Effect
     useEffect(() => {

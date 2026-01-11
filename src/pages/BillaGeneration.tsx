@@ -18,6 +18,7 @@ interface RawItem {
     quantity_pieces: number;
     weight_per_piece: number;
     material_name?: string;
+    material_types?: { name: string };
 }
 
 export default function BillaGeneration() {
@@ -49,7 +50,7 @@ export default function BillaGeneration() {
         if (rawData) {
             // Filter for items that look like circles (have OD) or material name contains "Circle"
             const circles = rawData
-                .filter((i: any) => i.shape_data?.od || i.material_types?.name.includes('Circle') || i.shape_data?.type === 'Circle')
+                .filter((i: RawItem) => i.shape_data?.od || i.material_types?.name?.includes('Circle') || i.shape_data?.type === 'Circle')
                 .map((d: any) => ({ ...d, material_name: d.material_types?.name }));
             setRawCircles(circles);
         }
@@ -149,8 +150,9 @@ export default function BillaGeneration() {
             setSuccessMsg(`Processed ${processQty} units of ${product.sku_name}`);
             fetchData(); // Refresh
 
-        } catch (err: any) {
-            setErrorMsg(err.message);
+        } catch (err: unknown) {
+            const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+            setErrorMsg(errorMessage);
         } finally {
             setLoading(false);
         }

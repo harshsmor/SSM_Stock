@@ -37,7 +37,16 @@ export default function Dashboard() {
         }
     }
 
-    const StatCard = ({ title, value, unit, icon: Icon, colorClass, link }: any) => (
+    interface StatCardProps {
+        title: string;
+        value: string | number;
+        unit: string;
+        icon: React.ElementType;
+        colorClass: string;
+        link?: string;
+    }
+
+    const StatCard = ({ title, value, unit, icon: Icon, colorClass, link }: StatCardProps) => (
         <div className="card hover:border-industrial-accent/50 transition-colors group">
             <div className="flex items-start justify-between mb-4">
                 <div className={`p-3 rounded-lg ${colorClass}`}>

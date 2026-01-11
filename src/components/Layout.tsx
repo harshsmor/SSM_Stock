@@ -9,7 +9,7 @@ import {
     X,
     LogOut
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import clsx from 'clsx';
 
 export default function Layout() {
@@ -44,9 +44,12 @@ export default function Layout() {
                 isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
             )}>
                 <div className="p-6 border-b border-industrial-border flex items-center justify-between">
-                    <div>
-                        <h1 className="text-xl font-bold text-white tracking-wider">SSM STOCK</h1>
-                        <p className="text-xs text-industrial-muted">Inventory System</p>
+                    <div className="flex items-center gap-3">
+                        <img src="/logo.png" alt="SSM Stock Logo" className="w-10 h-10 object-contain" />
+                        <div>
+                            <h1 className="text-xl font-bold text-white tracking-wider">SSM STOCK</h1>
+                            <p className="text-xs text-industrial-muted">Inventory System</p>
+                        </div>
                     </div>
                     <button
                         onClick={() => setIsMobileMenuOpen(false)}
@@ -94,9 +97,12 @@ export default function Layout() {
             <div className="flex-1 flex flex-col min-h-screen">
                 {/* Mobile Header */}
                 <div className="lg:hidden p-4 bg-industrial-surface border-b border-industrial-border sticky top-0 z-30 flex items-center justify-between">
-                    <h2 className="text-lg font-bold text-white">
-                        {navigation.find(i => i.href === location.pathname)?.name || 'SSM Stock'}
-                    </h2>
+                    <div className="flex items-center gap-2">
+                        <img src="/logo.png" alt="SSM Stock" className="w-8 h-8 object-contain" />
+                        <h2 className="text-lg font-bold text-white">
+                            {navigation.find(i => i.href === location.pathname)?.name || 'SSM Stock'}
+                        </h2>
+                    </div>
                     <button
                         onClick={() => setIsMobileMenuOpen(true)}
                         className="p-2 text-white bg-industrial-border rounded-md"

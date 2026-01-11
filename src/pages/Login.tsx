@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, User } from 'lucide-react'; // Changed icon to User
+import { Loader2 } from 'lucide-react'; // Changed icon to User
 
 export default function Login() {
     const [username, setUsername] = useState('');
@@ -27,8 +27,9 @@ export default function Login() {
 
             if (error) throw error;
             navigate('/');
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) { // Change to unknown for safer typing
+            const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -38,8 +39,8 @@ export default function Login() {
         <div className="min-h-screen bg-industrial-bg flex items-center justify-center p-4">
             <div className="card w-full max-w-md border-industrial-border/50 bg-industrial-surface/50 backdrop-blur-sm">
                 <div className="text-center mb-8">
-                    <div className="bg-industrial-accent/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <User className="w-8 h-8 text-industrial-accent" />
+                    <div className="flex justify-center mb-6">
+                        <img src="/logo.png" alt="SSM Stock Logo" className="w-24 h-24 object-contain" />
                     </div>
                     <h1 className="text-2xl font-bold text-white mb-2">SSM Stock</h1>
                     <p className="text-industrial-muted">Authorized Personnel Only</p>
