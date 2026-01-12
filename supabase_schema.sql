@@ -12,11 +12,18 @@ create table if not exists material_types (
 create table if not exists product_master (
   id uuid default uuid_generate_v4() primary key,
   sku_name text not null,
+  -- Finished Dimensions
+  final_od float,
+  final_id float,
+  final_thickness float,
+  -- Punching Config
+  pcd float,
+  hole_count int default 0,
+  hole_diameter float,
+  -- Legacy/Optional Logic
   required_raw_od float,
-  required_raw_id float,
-  generated_billa_od float, -- Size of the inner circle
-  is_billa_viable boolean default false,
-  compatible_child_sku_id uuid references product_master(id) -- Self-referencing FK
+  generated_billa_od float, 
+  is_billa_viable boolean default false
 );
 
 -- 4. Raw Inventory (The Bone Bank)
@@ -41,7 +48,7 @@ create table if not exists inventory_finished (
 -- 6. Scrap Log (The Waste Bin)
 create table if not exists scrap_log (
   id uuid default uuid_generate_v4() primary key,
-  scrap_type text check (scrap_type in ('Melting_Chips', 'Plate_Skeleton', 'Offcuts')),
+  scrap_type text check (scrap_type in ('Melting_Chips', 'Plate_Skeleton', 'Offcuts', 'Fissure', 'Fisher', 'Buttons', 'Punching_Scrap', 'Ring', 'Plate_Cuttings')),
   weight_kg float not null,
   created_at timestamp with time zone default now()
 );

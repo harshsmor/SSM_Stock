@@ -1,27 +1,25 @@
-import { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import {
     LayoutDashboard,
     PackagePlus,
     Scissors,
-    CircleDot,
-    Menu,
-    X,
+    Settings,
+    Package,
     LogOut
 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import clsx from 'clsx';
 
 export default function Layout() {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const location = useLocation();
     const { signOut } = useAuth();
 
     const navigation = [
         { name: 'Dashboard', href: '/', icon: LayoutDashboard },
-        { name: 'Inward Stock', href: '/inward', icon: PackagePlus },
-        { name: 'Plate Cutting', href: '/cutting', icon: Scissors },
-        { name: 'Billa Generation', href: '/billa', icon: CircleDot },
+        { name: 'Inward', href: '/inward', icon: PackagePlus },
+        { name: 'Cutting', href: '/cutting', icon: Scissors },
+        { name: 'Process', href: '/processing', icon: Settings },
+        { name: 'Stock', href: '/inventory', icon: Package },
     ];
 
     const handleSignOut = async () => {
@@ -29,34 +27,16 @@ export default function Layout() {
     };
 
     return (
-        <div className="min-h-screen bg-industrial-bg flex">
-            {/* Mobile Menu Backdrop */}
-            {isMobileMenuOpen && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                />
-            )}
+        <div className="min-h-screen bg-industrial-bg flex flex-col lg:flex-row">
 
-            {/* Sidebar */}
-            <div className={clsx(
-                "fixed lg:static inset-y-0 left-0 z-50 w-64 bg-industrial-surface border-r border-industrial-border transform transition-transform duration-200 lg:transform-none flex flex-col",
-                isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-            )}>
-                <div className="p-6 border-b border-industrial-border flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <img src="/logo.png" alt="SSM Stock Logo" className="w-10 h-10 object-contain" />
-                        <div>
-                            <h1 className="text-xl font-bold text-white tracking-wider">SSM STOCK</h1>
-                            <p className="text-xs text-industrial-muted">Inventory System</p>
-                        </div>
+            {/* Sidebar (Desktop Only) */}
+            <div className="hidden lg:flex fixed inset-y-0 left-0 z-50 w-64 bg-industrial-surface border-r border-industrial-border flex-col">
+                <div className="p-6 border-b border-industrial-border flex items-center gap-3">
+                    <img src="/logo.png" alt="SSM Stock Logo" className="w-10 h-10 object-contain" />
+                    <div>
+                        <h1 className="text-xl font-bold text-white tracking-wider">SSM STOCK</h1>
+                        <p className="text-xs text-industrial-muted">Inventory System</p>
                     </div>
-                    <button
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="lg:hidden text-industrial-muted hover:text-white"
-                    >
-                        <X className="w-6 h-6" />
-                    </button>
                 </div>
 
                 <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -67,7 +47,6 @@ export default function Layout() {
                             <Link
                                 key={item.name}
                                 to={item.href}
-                                onClick={() => setIsMobileMenuOpen(false)}
                                 className={clsx(
                                     "flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200",
                                     isActive
@@ -94,8 +73,8 @@ export default function Layout() {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col min-h-screen">
-                {/* Mobile Header */}
+            <div className="flex-1 flex flex-col min-h-screen lg:ml-64 mb-16 lg:mb-0">
+                {/* Mobile Header (Logo & Title Only) */}
                 <div className="lg:hidden p-4 bg-industrial-surface border-b border-industrial-border sticky top-0 z-30 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <img src="/logo.png" alt="SSM Stock" className="w-8 h-8 object-contain" />
@@ -103,11 +82,9 @@ export default function Layout() {
                             {navigation.find(i => i.href === location.pathname)?.name || 'SSM Stock'}
                         </h2>
                     </div>
-                    <button
-                        onClick={() => setIsMobileMenuOpen(true)}
-                        className="p-2 text-white bg-industrial-border rounded-md"
-                    >
-                        <Menu className="w-6 h-6" />
+                    {/* Logout Button for Mobile */}
+                    <button onClick={handleSignOut} className="text-industrial-muted hover:text-red-500">
+                        <LogOut className="w-5 h-5" />
                     </button>
                 </div>
 
@@ -115,6 +92,30 @@ export default function Layout() {
                     <Outlet />
                 </main>
             </div>
+
+            {/* Bottom Navigation (Mobile Only) */}
+            <div className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-black/90 backdrop-blur-md border-t border-industrial-border pb-2">
+                <nav className="flex justify-around items-center h-16">
+                    {navigation.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = location.pathname === item.href;
+                        return (
+                            <Link
+                                key={item.name}
+                                to={item.href}
+                                className={clsx(
+                                    "flex flex-col items-center justify-center w-full h-full space-y-1",
+                                    isActive ? "text-industrial-accent" : "text-industrial-muted hover:text-white"
+                                )}
+                            >
+                                <Icon className={clsx("w-6 h-6", isActive && "stroke-[2.5] drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]")} />
+                                <span className="text-[10px] font-medium tracking-wide">{item.name}</span>
+                            </Link>
+                        );
+                    })}
+                </nav>
+            </div>
+
         </div>
     );
 }

@@ -5,8 +5,9 @@ import { useAuth } from './hooks/useAuth';
 import Login from './pages/Login';
 import InwardEntry from './pages/InwardEntry';
 import PlateCutting from './pages/PlateCutting';
-import BillaGeneration from './pages/BillaGeneration';
+import Inventory from './pages/Inventory';
 import Dashboard from './pages/Dashboard';
+import Processing from './pages/Processing';
 import Layout from './components/Layout';
 import { Loader2 } from 'lucide-react';
 
@@ -42,7 +43,9 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/inward" element={<InwardEntry />} />
             <Route path="/cutting" element={<PlateCutting />} />
-            <Route path="/billa" element={<BillaGeneration />} />
+            <Route path="/inventory" element={<Inventory />} />
+            <Route path="/processing" element={<Processing />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Package, ShoppingCart, Trash2, ArrowUpRight } from 'lucide-react';
+import { Package, ShoppingCart, Trash2, ArrowUpRight, Settings } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -17,15 +17,20 @@ export default function Dashboard() {
 
     async function fetchStats() {
         try {
-            // 1. Raw Weight
-            const { data: rawData } = await supabase.from('inventory_raw').select('total_weight_kg');
-            const rawWeight = rawData?.reduce((sum, item) => sum + (item.total_weight_kg || 0), 0) || 0;
+            // 1. Raw Weight: Sum(qty * weight_per_piece)
+            const { data: rawData } = await supabase.from('inventory_raw')
+                .select('quantity_pieces, weight_per_piece');
 
-            // 2. Finished Count
-            const { data: finData } = await supabase.from('inventory_finished').select('quantity');
+            const rawWeight = rawData?.reduce((sum, item) => {
+                return sum + (item.quantity_pieces * item.weight_per_piece);
+            }, 0) || 0;
+
+            // 2. Finished Count: Sum(quantity)
+            const { data: finData } = await supabase.from('inventory_finished')
+                .select('quantity');
             const finishedCount = finData?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
 
-            // 3. Scrap Weight
+            // 3. Scrap Weight: Sum(weight_kg)
             const { data: scrapData } = await supabase.from('scrap_log').select('weight_kg');
             const scrapWeight = scrapData?.reduce((sum, item) => sum + (item.weight_kg || 0), 0) || 0;
 
@@ -37,82 +42,104 @@ export default function Dashboard() {
         }
     }
 
-    interface StatCardProps {
-        title: string;
-        value: string | number;
-        unit: string;
-        icon: React.ElementType;
-        colorClass: string;
-        link?: string;
-    }
-
-    const StatCard = ({ title, value, unit, icon: Icon, colorClass, link }: StatCardProps) => (
-        <div className="card hover:border-industrial-accent/50 transition-colors group">
+    const StatCard = ({ title, value, unit, icon: Icon, colorClass, link }: { title: string, value: string | number, unit: string, icon: any, colorClass: string, link: string }) => (
+        <Link to={link} className="card group hover:border-industrial-accent/50 transition-all duration-300 hover:bg-industrial-surface/80">
             <div className="flex items-start justify-between mb-4">
-                <div className={`p-3 rounded-lg ${colorClass}`}>
+                <div className={`p-3 rounded-lg ${colorClass} group-hover:scale-110 transition-transform`}>
                     <Icon className="w-6 h-6" />
                 </div>
-                {link && (
-                    <Link to={link} className="text-industrial-muted hover:text-white transition-colors">
-                        <ArrowUpRight className="w-5 h-5" />
-                    </Link>
-                )}
+                <ArrowUpRight className="w-5 h-5 text-industrial-muted group-hover:text-white transition-colors" />
             </div>
-            <p className="text-industrial-muted text-sm mb-1">{title}</p>
-            <h3 className="text-3xl font-bold text-white tracking-tight">
+            <p className="text-industrial-muted text-sm font-medium mb-1">{title}</p>
+            <h3 className="text-3xl font-bold text-white tracking-tight flex items-baseline gap-2">
                 {loading ? <div className="h-8 w-24 bg-industrial-border animate-pulse rounded" /> : value.toLocaleString()}
-                <span className="text-sm font-normal text-industrial-muted ml-2">{unit}</span>
+                <span className="text-sm font-normal text-industrial-muted">{unit}</span>
             </h3>
-        </div>
+        </Link>
+    );
+
+    const QuickAction = ({ title, desc, icon: Icon, link, color }: { title: string, desc: string, icon: any, link: string, color: string }) => (
+        <Link to={link} className="flex items-center gap-4 p-4 rounded-xl bg-industrial-surface border border-industrial-border hover:border-industrial-accent/50 hover:bg-industrial-surface/80 transition-all group">
+            <div className={`p-3 rounded-lg bg-industrial-bg border border-industrial-border group-hover:scale-110 transition-transform ${color}`}>
+                <Icon className="w-6 h-6" />
+            </div>
+            <div>
+                <h3 className="font-bold text-white group-hover:text-industrial-accent transition-colors">{title}</h3>
+                <p className="text-xs text-industrial-muted">{desc}</p>
+            </div>
+        </Link>
     );
 
     return (
-        <div className="space-y-8">
+        <div className="max-w-6xl mx-auto space-y-8">
+            {/* Header */}
             <div>
                 <h1 className="text-3xl font-bold text-white mb-2">My Factory</h1>
-                <p className="text-industrial-muted">Real-time production overview</p>
+                <p className="text-industrial-muted">Real-time production overview & controls</p>
             </div>
 
+            {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatCard
-                    title="Steel in Stock"
-                    value={stats.rawWeight.toFixed(2)}
+                    title="Raw Material Stock"
+                    value={stats.rawWeight.toFixed(0)}
                     unit="kg"
                     icon={Package}
                     colorClass="bg-blue-500/10 text-blue-500"
-                    link="/inward"
+                    link="/inventory"
                 />
                 <StatCard
-                    title="Ready to Sell"
+                    title="Finished Goods"
                     value={stats.finishedCount}
                     unit="pcs"
                     icon={ShoppingCart}
                     colorClass="bg-green-500/10 text-green-500"
-                    link="/billa"
+                    link="/inventory"
                 />
                 <StatCard
-                    title="Scrap Value"
-                    value={stats.scrapWeight.toFixed(2)}
+                    title="Total Scrap Generated"
+                    value={stats.scrapWeight.toFixed(0)}
                     unit="kg"
                     icon={Trash2}
                     colorClass="bg-red-500/10 text-red-500"
-                    link="/cutting"
+                    link="/inventory"
                 />
             </div>
 
-            {/* Quick Actions / Recent Activity could go here */}
-            <div className="card bg-gradient-to-br from-industrial-surface to-industrial-bg">
-                <h3 className="text-lg font-bold text-white mb-4">Quick Actions</h3>
-                <div className="flex flex-wrap gap-4">
-                    <Link to="/inward" className="btn-secondary text-sm py-2">
-                        + Inward Stock
-                    </Link>
-                    <Link to="/cutting" className="btn-secondary text-sm py-2">
-                        ✂️ Plate Cutting
-                    </Link>
-                    <Link to="/billa" className="btn-secondary text-sm py-2">
-                        ⚙️ Generate Billa
-                    </Link>
+            {/* Operations Section */}
+            <div>
+                <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <Settings className="w-5 h-5 text-industrial-accent" /> Operations
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <QuickAction
+                        title="Inward Stock"
+                        desc="Add new raw material"
+                        icon={Package}
+                        link="/inward"
+                        color="text-blue-400"
+                    />
+                    <QuickAction
+                        title="Plate Cutting"
+                        desc="Cut plates into circles"
+                        icon={Trash2} // Using Trash/Scissors metaphor or generic settings
+                        link="/cutting"
+                        color="text-orange-400"
+                    />
+                    <QuickAction
+                        title="Processing"
+                        desc="Machining & Finishing"
+                        icon={Settings}
+                        link="/processing"
+                        color="text-purple-400"
+                    />
+                    <QuickAction
+                        title="Inventory"
+                        desc="View & Sell Stock"
+                        icon={ShoppingCart}
+                        link="/inventory"
+                        color="text-green-400"
+                    />
                 </div>
             </div>
         </div>
